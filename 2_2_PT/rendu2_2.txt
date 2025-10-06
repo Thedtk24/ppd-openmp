@@ -1,0 +1,113 @@
+2.2.1. Exercice 1
+       ----------
+-> Le programme à écrire est décrit dans l'énoncé, et est codé dans le fichier 2_2_1.c
+/*
+    Nous pouvons nous servir de la directive #pragma omp for pour paralléliser le calcul de la somme dans cet exercice. 
+    Cette directive permet de répartir facilement les itérations d'une boucle for parmi les fils d'exécution d'une région parallèle. 
+    Elle est donc parfaitement adaptée à ce cas-ci.
+*/
+
+2.2.2. Exercice 2
+       ----------
+Voir le fichier 2_2_2.c 
+-> Quelles instructions sont exécutées par tous les fils d'exécution ? Par un seul fil d'exécution ?
+/*
+    L'appel à la fonction printf pour afficher le nombre de fils d'exécution ne sera exécuté que par le fil 
+    d'exécution numéro 0. Les itérations de la boucle for à l'intérieur de la région parallèle seront réparties 
+    parmi les 4 fils d'exécution de cette dernière. Enfin, les autres instructions de la région parallèle seront 
+    exécutées par tous les fils d'exécution.
+*/
+
+-> Exécutez le même programme plusieurs fois de suite et commentez l'ordre d'exécution des instructions.
+/*
+    Comme les instructions de la région parallèle sont exécutées par plusieurs fils d'exécutions 
+    différents au même temps, l'ordre d'exécution ne suit pas forcément l'ordre dans lequel les instructions 
+    apparaissent dans le code source. De plus, l'ordre d'exécution change d'une exécution à l'autre.
+*/
+
+-> Exécutez le programme en rédirigeant sa sortie standard vers l'outil sort de tri lexicographique, puis observez 
+et commentez la répartition des itérations par fil d'exécution.
+/*
+    Les fils d'exécution effectuent chacun un bloc de PORTION (10) itérations. Cependant, certains fils d'exécution 
+    traitent plusieurs blocs d'itérations. Ce comportement est dû à l'utilisation de la politique d'ordonnacement dynamic 
+    lors de l'exécution parallèle de la boucle. 
+    Selon cette politique, dès qu'il est disponible, un fil d'exécution se voit attribuer le traitement d'un bloc d'itérations. 
+    Ceux-ci ne sont donc pas forcément répartis de manière équitable entre tous les fils d'exécution.
+*/
+
+-> Vérifiez si la répartition reste stable à travers plusieurs exécutions. Pourquoi ?
+/*
+    La répartition ne reste pas stable à travers plusieurs exécutions. En effet, la politique d'ordonnancement dynamic ne spécifie 
+    pas dans quel ordre les fils d'exécution se voient attribuer les blocs d'itérations de la boucle for. 
+    De plus, la disponibilité des fils d'exécution dépend également des décisions du système d'exploitation de la machine 
+    que nous utilisons pour exécuter le programme.
+*/
+
+-> À présent, utilisez la politique d'ordonnancement static. Exécutez le programme plusieurs fois et 
+commentez sur la stabilité de la répartition des itérations entre les fils d'exécution.
+/*
+    Nous pouvons constater que les deux premiers fils d'exécution (numéros 0 et 1) se voient chacun attribuer 
+    trois blocs de PORTION (10) itérations et les deux derniers fils d'exécution (numéros 2 et 3) reçoivent 
+    chacun 2 blocs de PORTION (10) itérations. 
+    Ce comportement démontre bien l'effet de la politique static dont le but est d'attribuer les blocs d'itérations 
+    de la boucle for aux différents fils d'exécution dans l'ordre, en partant du premier (numéro 0). 
+    S'il y a plus de blocs que de fils d'exécution, comme dans ce cas-ci, l'attribution reprend dans l'ordre à partir du fil 
+    d'exécution numéro 0.
+*/
+
+-> Quels sont les effets potentiels de la politique de l'ordonnancement choisie sur les performances ?
+/*
+    Avec la politique static, l'ordonnancement des itérations est fixé une seule fois en début de l'exécution et ne 
+    nécessite pas de prises de décision supplémentaires en cours d'exécution. 
+    Comme dans ce cas précis, les différentes itérations ont un coût uniforme en temps d'exécution, cette politique est bien adaptée.
+
+    Avec la politique dynamic, l'ordonnancement est ajusté suivant la disponibilité des différents 
+    fils d'exécution à la volée et est donc plus coûteux en termes de cycles du processeur. 
+    Cependant, cette politique peut s'avérer très performante lorsque la charge de travail varie d'une itération à l'autre.
+*/
+
+2.2.3. Exercice 3
+       ----------
+Voir le fichier 2_2_3.c, l'exécuter et analyser.
+
+-> Répétez l'exécution plusieurs fois. Les résultats sont-ils cohérents ?
+/*
+    Oui, même après plusieurs exécutions les résultats restent cohérents.
+*/
+
+-> Quelles itérations vont être exécutées par quels fils d'exécution ?
+/*
+   |--------------------------------------|
+   |Fil d'exécution	 Itérations à exécuter|
+   |--------------------------------------|
+   |     0                0 ≤ i ≤ 24      |
+   |     1	             25 ≤ i ≤ 49      |
+   |     2	             50 ≤ i ≤ 74      |
+   |     3	             75 ≤ i ≤ 99      |
+   |--------------------------------------|
+*/
+
+-> Est-ce raisonnable d'utiliser la clause nowait dans ce cas-ci ?
+/*
+    Même en présence de nowait au niveau de la première boucle, chaque fil d'exécution aura forcément fini de 
+    calculer le sous-ensemble des cases du tableau c dont il aura besoin pour calculer les cases du tableau d correspodantes. 
+    L'utilisation de nowait ne pose donc pas de problème dans ce cas particulier.
+*/
+
+-> Ordonnancez l'exécution de la seconde boucle suivant la politique guided, exécutez le programme plusieurs 
+fois et commentez sur la cohérence des résultats.
+/*
+    Ce changement provoque des incéherences dans les résultats car avec la politique d'ordonnancement 
+    guided appliquée à la deuxième boucle, la sémantique du programme n'est plus respectée. 
+    En effet, les blocs d'itérations de la deuxième boucle n'ont pas la même taille et ne sont pas forécement 
+    affectés aux même fils d'exécution que les blocs d'itérations de la première boucle. 
+    L'ordre des opérations sur les cases du tableau c n'est plus garanti.
+*/
+
+2.2.4. Exercice 4
+       ----------
+-> Parallélisez le calcul dans la fonction enumeration_sort_kernel à l'aide des directives et des clauses OpenMP 
+que vous jugerez adaptées à ce cas de figure.
+/*
+    Voir le fichier 2_2_4.c 
+*/
