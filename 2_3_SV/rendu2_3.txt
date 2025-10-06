@@ -1,0 +1,69 @@
+2.3.1. Exercice 1
+       ----------
+-> Compilez le code source suivant avec et sans la clause private(val). Exécutez les deux versions du programme. 
+Qu'observez-vous et pourquoi ?
+Voir fichier 2_3_1.c 
+/*
+    Sans la clause private(val), tous les fils d'exécution de la région parallèle ont accès à la variable val en mémoire partagée. 
+    Tous font appel à la fonction rand pour générer un nombre aléatoire et le placent dans val ce qui conduit à une situation de compétition. 
+    Seulement, val ne peut contenir qu'une seule valeur, probablement celle produite par le dernier fils 
+    d'exécution à avoir effectué l'affectation. Enfin, une fois la mise en veille d'une second (appel à sleep) écoulée, tous les 
+    fils d'exécution affichent la valeur actuellement présente dans val. L'affichage est donc identique dans le cas de tous les fils 
+    d'exécution.
+
+    Avec la clause private(val), le compilateur créera une copie privée de val pour chaque fil d'exécution sans lien avec l'emplacement 
+    mémoire initial de val. Chaque fil d'exécution y placera une valeur aléatoire différente qu'il affichera sur la sortie standard au 
+    bout d'une seconde de veille.
+*/
+
+2.3.2. Exercice 2
+       ----------
+-> Le programme à écrire est décrit dans l'énoncé et le but est de paralléliser ce programme avec les bonnes directives OpenMP 
+(Voir le fichier 2_3_2.c)
+/*
+    #pragma omp parallel for reduction(+:somme) est la directive à utiliser ici.
+
+    La parallélisation de la somme se fait en deux étapes principales :
+
+    1. répartition des itérations de la boucle entre les fils d'exécution de la région parallèle qui calculent chacun 
+    une somme partielle sans écrire le résultat directement dans la variable partagée somme,
+    2. addition des sommes partielles et écriture du résultat dans la variable partagée somme par un seul fil d'exécution 
+    pour éviter une situation de compétition.
+*/
+
+2.3.3. Exercice 3
+       ----------
+-> Étudiez, compilez et exécuter le code source du fichier 2_3_3.c 
+Ensuite, expliquez les valeurs des variables tid, tprivate et rprivate affichées lors de l'exécution.
+/*
+    Ce programme déclare trois variables globales, c'est-à-dire tid, tprivate et rprivate, puis applique la clause threadprivate 
+    sur la variable tprivate. La fonction principale comporte deux régions parallèles appliquant la clause private sur tid et rprivate.
+
+    Chaque fil d'exécution de la première région affecte à tid, tprivate et rprivate son numéro (ici de 0 à 3) puis affiche l
+    es valeurs des trois variables. Dans la deuxième région parallèle, chaque fil d'exécution affecte à nouveau à tid son numéro 
+    puis affiche les valeurs de tid, tprivate et rprivate.
+
+    C'est à ce moment-là que nous pouvons observer l'effet de la clause threadprivate sur la variable tprivate. 
+    Grâce à cette clause, chaque copie privée de la variable a conservé sa valeur d'une région parallèle à l'autre. 
+    Au contraire, les copies privée de rprivate créées à l'entrée dans la première région parallèle ont été détruites à la sortie de celle-ci. 
+    De nouvelles copies de rprivate ont donc été créées à l'entrée dans la deuxième région parallèle. 
+    Enfin, comme la clause private n'initialise pas les copies privées créées, les valeurs affichées par les fils d'exécution 
+    de cette région sont des valeurs arbitraires se trouvant en mémoire.
+*/
+
+2.3.4. Exercice 4
+       ----------
+-> Étudiez le code source du fichier 2_3_4.c et parallélisez le calcul dans la fonction prime_kernel à 
+l'aide des directives et des clauses OpenMP que vous jugerez adaptées à ce cas de figure.
+/*
+    (Voir fichier 2_3_4.c, fonction prime_kernel)
+*/
+
+
+2.3.5. Exercice 5
+       ----------
+-> Étudiez le code source du fichier 2_3_5.c et parallélisez le calcul dans la fonction matvec_kernel à 
+l'aide des directives et des clauses OpenMP que vous jugerez adaptées à ce cas de figure.
+/*
+    (Voir fichier 2_3_5.c, fonction matvec_kernel)
+*/
