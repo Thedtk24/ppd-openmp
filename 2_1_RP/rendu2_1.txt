@@ -1,0 +1,73 @@
+2.1.1. Exercice 1
+       ----------
+-> Compilez le code source 2_1_1.c sans et avec l'option -fopenmp du compilateur et 
+exécutez le programme résultant dans les deux cas. Qu'observez-vous ?
+/*
+    Sans l'option -fopenmp, la sortie : 
+
+    ```
+        Bonjour
+        le monde !
+    ```
+
+    Avec l'option -fopenmp, la sortie :
+
+    ```
+        Bonjour
+        Bonjour
+        Bonjour
+        Bonjour
+        le monde !
+    ```
+
+    Lorsque l'option -fopenmp est présente à la compilation, le message « Bonjour » est 
+    affiché plusieurs fois à l'écran. C'est le résultat de l'utilisation de la 
+    directive #pragma omp parallel qui permet de créer une région parallèle. 
+    La création d'une région parallèle entraîne la déduplication du programme en plusieurs 
+    fils d'exécution. Les instructions de la région parallèle sont alors exécutées une fois par chaque fil d'exécution. 
+    À noter que la directive #pragma omp parallel ne s'applique qu'à l'instruction (ou le bloc d'instructions {}) qui la suit directement. 
+    Ainsi, seul le message « Bonjour » est affiché plusieurs fois. À la sortie de la région parallèle, tous les fils 
+    d'exécution parallèles sauf le fil principal sont détruites et l'exécution du programme se poursuit de manière séquentielle.
+
+    Au contraire, lorsque nous compilons le programme sans l'option -openmp, le message « Bonjour » n'est affiché qu'une seule fois. 
+    Dans ce cas, le programme ne comporte qu'un seul fil d'exécution car aucune région parallèle n'a été créée. 
+    En effet, sans l'option -openmp, les directives OpenMP telle que #pragma omp parallel sont simplement ignorées par le compilateur.
+*/
+
+-> Combien de fils d'exécution le programme utilise-t-il par défaut ?
+/*
+    Le message « Bonjour » est affiché 4 fois et c'est aussi le nombre de cœurs logiques du processeur de l'ordinateur sur 
+    lequel le programme a été exécuté. Par défaut, un programme parallélisé avec OpenMP utilise donc autant de fils d'exécution 
+    qu'il y a de cœurs logiques dans le processeur qui exécute le programme.
+*/
+
+-> En vous appuyant sur le support du cours, changez le nombre de fils d'exécution utilisé par défaut à l'aide de : 
+    . la clause num_threads,
+    . a fonction omp_set_num_threads de la bibliothèque OpenMP,
+    . la variable d'environnement OMP_NUM_THREADS.
+/*
+    Voir le code source 2_1_1.c
+    Décommentez les lignes à chaque fois pour utiliser chacune des directives et exécutez.
+*/
+
+-> Quels sont les avantages et les inconvénients de ces différentes méthodes ?
+/*
+    L'utilisation de la clause num_threads permet de cibler facilement une région parallèle en particulier sans affecter les autres. 
+    Seulement, une fois le programme compilé, si le nombre passé en argument de la clause est une constante, il n'est plus possible 
+    de le changer.
+
+    Un appel à la fonction omp_set_num_threads fixe le nombre de fils d'exécution pour toutes les régions parallèles qui le suivent à 
+    l'exception de celles qui comportent la clause num_threads.
+
+    Enfin, le positionnement de la variable d'environnement OMP_NUM_THREADS affecte toutes les régions parallèles pour lesquelles 
+    le nombre de fils d'exécution n'a été fixé ni avec la clause num_threads ni avec un appel à la fonction omp_set_num_threads. 
+    Contrairement aux méthodes précédentes, celle-ci ne nécessite pas de modification du code source du programme.
+*/
+
+2.1.2. Exercice 2
+       ----------
+-> Le but de l'exercice est d'adapter le code source de façon à empêcher la parallélisation du programme si le premier argument de 
+la ligne de commande est « 0 » (zéro). Pour ce faire, aidez-vous de la clause if applicable à la directive #pragma omp parallel.
+/*
+    Voir le code source 2_1_2.c
+*/
