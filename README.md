@@ -18,5 +18,4 @@ gcc -o <nom_binaire> <fichier.c> -fopenmp
 
 > L'énoncé se trouve dans le dossier Doc, et les rendus de chaque chapitre sont dans les dossiers correspondants.
 
-
-Auteur TP : Marek Felšöci, @felsocim
+Auteur TP : Marek Felšöci : [https://felsoci.sk/](https://felsoci.sk/) , @felsocim
